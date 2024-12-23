@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mubble-template"
+version = "0.2.1"
+description = ""
+authors = ["vladislavkovalskyi <v.darknesssb@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mubble = "^1.4.0"
+openai = "^1.54.3"
+tortoise-orm = "^0.21.7"
+tiktoken = "^0.8.0"
+aioowm = "^2.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

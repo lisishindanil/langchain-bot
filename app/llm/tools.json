@@ -1,0 +1,68 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "get_only_time",
+            "description": "Используй эту функцию, чтобы получить текущее время.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_full_time",
+            "description": "Используй эту функцию, чтобы получить текущее время, часовой пояс, дату, день.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Используй эту функцию, чтобы узнать погоду в любом городе мира.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "description": "Название города, в котором ты хочешь узнать погоду."
+                    }
+                },
+                "required": ["city"],
+                "additionalProperties": false
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_random_image",
+            "description": "Используй эту функцию, отправить рандомное изображение пользователю. Не отвечай после выполнения этой функции.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "answer": {
+                        "type": "string",
+                        "description": "Твой ответ пользователю"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "description": "Размер изображения в пикселях. Минимум 150, максимум 600."
+                    }
+                },
+                "required": ["answer"],
+                "additionalProperties": false
+            }
+        }
+    }
+]
