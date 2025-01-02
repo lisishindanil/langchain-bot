@@ -1,18 +1,15 @@
 import inspect
+from tkinter.tix import InputOnly
 from typing import Any
 from mubble import AiohttpClient, Message
-from mubble.types import InputFile
-from aioowm import OWM
 import time
 
-from app.config import OWM_TOKEN
 from app.llm.decorators import (
     terminate_after_answer,
 )  # Декоратор, который нам нужен для замораживания ответа модели
 
 
 http_client = AiohttpClient()
-weather = OWM(OWM_TOKEN)
 
 
 # Пример синхронной функции
@@ -47,18 +44,6 @@ async def get_full_time() -> dict[str, Any]:
 
     return response  # Возвращает этот объект, который будет читать LLM для анализа
 
-
-# Пример асинхронной функции
-async def get_weather(city: str) -> dict[str, Any]:
-    """
-    Получает информацию о погоде в заданном городе.
-    * `city` Город, в котором нужно узнать погоду.
-    """
-    return (
-        await weather.get(city)
-    ).model_dump()  # Так как нам возвращается объект PyDantic Model, мы используем метод model_dump() чтобы получить json-представление этого объекта
-
-
 # Пример функции для отправки рандомного изображения
 # Она принимает ответ модели и размер изображения
 # Если размер не указан, то используется 400
@@ -76,7 +61,7 @@ async def send_random_image(
     except Exception as e:
         return {"error": str(e)}  # Возвращаем ошибку, если она возникла для LLM
     await message.answer_photo(
-        InputFile("image.png", image), caption=answer
+        InputOnly("image.png", image), caption=answer
     )  # Отправляем сообщение пользователю с изображением и ответом модели
     return {"status": "image sent"}  # Пишем, что изображение было отправлено
 

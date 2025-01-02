@@ -6,19 +6,15 @@ from mubble import (
     Message,
     logger,
 )  # Message - объект сообщения телеграм, logger - модуль для логирования
-from openai import AsyncOpenAI  # Клиент для работы с API OpenAI
-from openai.types.chat import (
-    ChatCompletion,  # Объект ответа модели
-    ChatCompletionMessageToolCall,  # Объект инструмента
-)
+from langchain_openai import ChatOpenAI
 from app.database.chat_history import ChatHistory  # Модель истории чата
 from app.config import LLM_MODEL, OPENAI_TOKEN  # Конфигурация
 from app.llm import tools, tool_objects  # Инструменты и объекты инструментов
 from app.enums import Error, Info  # Перечисления ошибок и информации
 
-client = AsyncOpenAI(
-    api_key=OPENAI_TOKEN
-)  # Инициализация клиента для работы с API OpenAI
+client = ChatOpenAI(api_key=OPENAI_TOKEN, model=LLM_MODEL).bind_tools(
+    tools=tools, tool_choice="auto"
+)  # Клиент для работы с OpenAI API
 
 
 async def make_completion(chat_history: ChatHistory, message: Message) -> str | None:
@@ -37,9 +33,11 @@ async def make_completion(chat_history: ChatHistory, message: Message) -> str | 
         response = await get_model_text_response(
             temp_messages
         )  # Получаем ответ от модели
-        result_message = response.choices[0]  # Получаем ответ
+        result_message = response.content
 
-        if tool_calls := result_message.message.tool_calls:  # Если есть инструменты
+        if tool_calls := response.additional_kwargs.get(
+            "tool_calls", []
+        ):  # Если есть инструменты
             tool_responses, should_terminate = await handle_tool_calls(
                 tool_calls, message
             )  # Обрабатываем инструменты
@@ -52,37 +50,33 @@ async def make_completion(chat_history: ChatHistory, message: Message) -> str | 
                 )  # Сохраняем все сообщения
                 return Info.TERMINATE_AFTER_ANSWER  # Возвращаем информацию о завершении
             continue  # Пропускаем остальной код
-        elif result_content := result_message.message.content:  # Если есть контент
+        elif result_message:  # Если есть контент
             temp_messages.append(
-                {"role": "assistant", "content": result_content}
+                {"role": "assistant", "content": result_message}
             )  # Добавляем контент
             await save_chat_history(
                 chat_history, temp_messages
             )  # Сохраняем все сообщения
-            return result_content  # Возвращаем контент
+            return result_message  # Возвращаем контент
         else:
             return Error.NO_CONTENT_IN_RESPONSE  # Возвращаем ошибку
 
 
-async def get_model_text_response(messages: dict) -> ChatCompletion:
+async def get_model_text_response(messages: dict):
     """Получает ответ от модели с заданными сообщениями."""
-    return await client.chat.completions.create(
-        model=LLM_MODEL, messages=messages, tools=tools
+    return await client.ainvoke(
+        input=messages
     )  # Создаём запрос к модели с сообщениями и инструментами
 
 
-async def handle_tool_calls(
-    tool_calls: list[ChatCompletionMessageToolCall], message: Message
-) -> list[dict[str, Any]]:
+async def handle_tool_calls(tool_calls: list, message: Message) -> list[dict[str, Any]]:
     """Обрабатывает все tool_calls и возвращает список сообщений с результатами выполнения инструментов."""
     temp_tool_messages = []  # Временный список сообщений с результатами инструментов
     should_terminate = False  # Флаг, который показывает, нужно ли завершить генерацию ответа после выполнения инструмента
 
     for tool_call in tool_calls:  # Проходимся по всем инструментам
-        tool_name = tool_call.function.name  # Получаем имя инструмента
-        tool_args = json.loads(
-            tool_call.function.arguments
-        )  # Получаем аргументы инструмента
+        tool_name = tool_call.get("function", {}).get("name")
+        tool_args = json.loads(tool_call.get("function", {}).get("arguments", []))
 
         if tool := tool_objects.get(tool_name):  # Если инструмент существует
             logger.debug(

@@ -5,7 +5,8 @@ from app.database.chat_history import ChatHistory
 from app.handlers import dps
 from app.database.user import User
 from app.llm.prompts import entry
-from app.utils.auto_cleaner import clean_chat_history, clean_chat_history_cool
+from app.utils.auto_cleaner import clean_chat_history_cool
+
 
 # LoopWrapper: для работы с асинхронными функциями
 loop_wrapper = LoopWrapper()

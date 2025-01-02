@@ -11,9 +11,6 @@ current_dir = Path(__file__).parent
 env.read_envfile(".env")
 
 OPENAI_TOKEN = env.str("OPENAI_TOKEN")  # Токен для OpenAI API
-OWM_TOKEN = env.str(
-    "OWM_TOKEN"
-)  # Токен для OpenWeatherMap API (он тут просто для примера)
 
 # Настройки базы данных
 MODELS_PATH = "app.database"  # Путь к моделям базы данных
@@ -53,7 +50,7 @@ async def setup_database() -> None:
 
 # Настройки бота
 # Устанавливаем уровень логирования: он не блокирует поток, это лучше чем использование print
-logger.set_level("INFO")  # "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "EXCEPTION"
+logger.set_level("DEBUG")  # "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "EXCEPTION"
 # .from_env() - функция, которая автоматически сканирует .env на наличие переменной BOT_TOKEN
 api = API(Token.from_env(path_to_envfile=".env"))
 # Устанавливаем режим парсинга всех сообщений в HTML (чтобы можно было делать форматирование текста)
