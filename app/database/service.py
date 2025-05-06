@@ -1,12 +1,6 @@
 from tortoise import Model, fields
 
 
-# Модель для хранения системных данных
-class System(Model):
-    id = fields.IntField(pk=True)
-    reports = fields.JSONField(default=[], null=True)
-
-
 # Модель для хранения услуг салона красоты.
 class Service(Model):
     id = fields.IntField(pk=True)
@@ -15,4 +9,4 @@ class Service(Model):
     price = fields.FloatField()
     duration = fields.IntField()  # Длительность в минутах
 
-    slots: fields.ReverseRelation["Slot"]  # Обратная связь с временными слотами
+    slots: fields.ReverseRelation["Slot"]  # type: ignore
