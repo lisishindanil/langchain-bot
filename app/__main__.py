@@ -1,9 +1,14 @@
 from mubble import Dispatch, LoopWrapper, Mubble, logger
 
 from app.config import api, setup_database
-from app.database.chat_history import ChatHistory
-from app.handlers import dps
 from app.database.user import User
+from app.database.chat_history import ChatHistory
+from app.database.service import Service
+from app.database.master import Master
+from app.database.slot import Slot
+from app.database.appointment import Appointment
+from app.database.system import System
+from app.handlers import dps
 from app.llm.prompts import entry
 from app.utils.auto_cleaner import clean_chat_history_cool
 
@@ -31,13 +36,30 @@ async def update_entry_prompt():
         await chat_history.save()
 
 
+async def clear_database():
+    """
+    Очистка всех таблиц в базе данных
+    """
+    # Получаем все модели
+    models = [User, ChatHistory, Service, Master, Slot, Appointment, System]
+
+    # Очищаем каждую таблицу
+    for model in models:
+        await model.all().delete()
+        logger.info(f"Cleared table: {model.__name__}")
+
+
 # Этот декоратор срабатывает при запуске бота
 @loop_wrapper.lifespan.on_startup
 async def on_startup() -> None:
     # Инициализация базы данных
     logger.info("Database initialization...")
     await setup_database()
-    logger.info("Database initialized!")
+
+    # Очистка базы данных
+    logger.info("Clearing database...")
+    await clear_database()
+    logger.info("Database cleared!")
 
     # Обновление системного промпта
     logger.info("Updating entry prompt...")

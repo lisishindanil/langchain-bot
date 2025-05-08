@@ -11,9 +11,14 @@ from app.database.slot import Slot
 
 
 current_dir = Path(__file__).parent
-env.read_envfile(".env")
+env.read_envfile(str(current_dir / ".env"))
 
 OPENAI_TOKEN = env.str("OPENAI_TOKEN")  # Токен для OpenAI API
+
+DB_PASSWORD = env.str("DB_PASSWORD")
+DB_ADDRESS = env.str("DB_ADDRESS")
+DB_PORT = env.str("DB_PORT")
+DB_NAME = env.str("DB_NAME")
 
 # Настройки базы данных
 MODELS_PATH = "app.database"  # Путь к моделям базы данных
@@ -28,13 +33,11 @@ models = [
 ]
 
 TORTOISE_ORM = {
-    # Подключение к базе данных (Здесь стоит sqlite3 в файле database.sqlite3, но можно использовать любую другую)
-    # Для тестов можно использовать: `sqlite3://:memory:` (База данных будет храниться в памяти)
-    # Для asyncpg: `asyncpg://user:password@localhost:5432/database`
-    # Для psycopg: `psycopg://user:password@localhost:5432/database`
-    # Для mssql: `mysql://user:password@localhost:3306/database?driver=some odbc driver`
-    # Подробнее: https://tortoise.github.io/databases.html#clean-familiar-python-interface
-    "connections": {"default": "sqlite://database.sqlite3"},
+    # Подключение к базе данных (теперь используется PostgreSQL через asyncpg)
+    # Пример: asyncpg://user:password@localhost:5432/database
+    "connections": {
+        "default": f"asyncpg://danillisishin:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
+    },
     "apps": {
         "models": {
             "models": models,
