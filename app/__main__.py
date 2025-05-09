@@ -36,30 +36,12 @@ async def update_entry_prompt():
         await chat_history.save()
 
 
-async def clear_database():
-    """
-    Очистка всех таблиц в базе данных
-    """
-    # Получаем все модели
-    models = [User, ChatHistory, Service, Master, Slot, Appointment, System]
-
-    # Очищаем каждую таблицу
-    for model in models:
-        await model.all().delete()
-        logger.info(f"Cleared table: {model.__name__}")
-
-
 # Этот декоратор срабатывает при запуске бота
 @loop_wrapper.lifespan.on_startup
 async def on_startup() -> None:
     # Инициализация базы данных
     logger.info("Database initialization...")
     await setup_database()
-
-    # Очистка базы данных
-    logger.info("Clearing database...")
-    await clear_database()
-    logger.info("Database cleared!")
 
     # Обновление системного промпта
     logger.info("Updating entry prompt...")
