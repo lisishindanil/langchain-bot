@@ -2,6 +2,8 @@ import inspect
 from typing import Any, List, Dict
 from datetime import datetime, timedelta
 from mubble import AiohttpClient, Message
+import datetime as datetime_module
+from tortoise.exceptions import DoesNotExist
 
 from app.llm.decorators import (
     terminate_after_answer,
@@ -43,7 +45,7 @@ async def get_free_time_slots(
                         "price": slot.service.price,
                     },
                     "master": {
-                        "id": slot.master.id,
+                        "staff_id": slot.master.id,
                         "name": slot.master.name,
                         "specialization": slot.master.specialization,
                     },
@@ -83,27 +85,36 @@ async def create_record(
     staff_id: int,
     services: List[Dict[str, Any]],
     client: Dict[str, str],
-    datetime_str: str,
+    datetime: str,
     comment: str,
+    message: Message,
 ) -> Dict[str, Any]:
     """
     Creates a new record with multiple services or single service.
     """
     # Parse datetime
-    appointment_datetime = datetime.fromisoformat(datetime_str)
+    appointment_datetime = datetime_module.datetime.fromisoformat(datetime)
 
-    # Get or create user
-    user, _ = await User.get_or_create(
-        phone=client["phone"], defaults={"name": client["name"]}
-    )
+    # Отримати uid з message
+    uid = message.from_user.id  # або message.user_id, якщо структура інша
 
-    # Create appointments for each service
+    # Знайти користувача по uid
+    try:
+        user = await User.get(uid=uid)
+    except DoesNotExist:
+        return {
+            "error": "Користувача з таким uid не знайдено. Будь ласка, зареєструйтесь спочатку."
+        }
+
+    # Оновити телефон, якщо він переданий і ще не збережений
+    if client.get("phone") and not user.phone:
+        user.phone = client["phone"]
+        await user.save()
+
+    # Далі як і було:
     appointments = []
     for service_info in services:
-        # Get service
         service = await Service.get(id=service_info["id"])
-
-        # Get or create slot
         slot, _ = await Slot.get_or_create(
             date=appointment_datetime.date(),
             time=appointment_datetime.time(),
@@ -111,8 +122,6 @@ async def create_record(
             master_id=staff_id,
             defaults={"status": "booked"},
         )
-
-        # Create appointment
         appointment = await Appointment.create(user=user, slot=slot, status="active")
         appointments.append(appointment)
 
@@ -127,12 +136,30 @@ async def create_record(
                     "price": app.slot.service.price,
                     "duration": app.slot.service.duration,
                 },
-                "master": {"id": app.slot.master.id, "name": app.slot.master.name},
+                "master": {
+                    "id": (await app.slot.master).id,
+                    "name": (await app.slot.master).name,
+                },
                 "datetime": f"{app.slot.date.isoformat()}T{app.slot.time.isoformat()}",
             }
             for app in appointments
         ]
     }
+
+
+async def get_staff() -> list[dict]:
+    """
+    Returns a list of all staff (masters) with their id, name, and specialization.
+    """
+    masters = await Master.all()
+    return [
+        {
+            "id": master.id,
+            "name": master.name,
+            "specialization": master.specialization,
+        }
+        for master in masters
+    ]
 
 
 # Словарь, который содержит все функции из этого файла

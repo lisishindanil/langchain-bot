@@ -8,6 +8,7 @@ class User(Model):
     # uid (Telegram ID): BigInt, потому что TelegramID выходит за границы 32-bit числа
     uid = fields.BigIntField(unique=True)
     name = fields.CharField(max_length=255)
+    phone = fields.CharField(max_length=32, null=True)
 
     chat_history = fields.ForeignKeyField(
         "models.ChatHistory", related_name="user", null=True

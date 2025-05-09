@@ -100,5 +100,17 @@
                 "required": ["staff_id", "services", "client", "comment", "datetime"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_staff",
+            "description": "Returns a list of all staff (masters) with their id, name, and specialization.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
     }
 ]

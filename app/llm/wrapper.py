@@ -1,6 +1,7 @@
 import inspect  # Модуль для работы с функциями (получение аргументов, их значения и т.д.)
 import json  # Модуль для работы с JSON, желательно использовать orjson, так как он быстрее
 from typing import Any, Callable  # Модуль для работы с типами данных
+from datetime import datetime
 
 from mubble import (
     Message,
@@ -17,12 +18,22 @@ client = ChatOpenAI(api_key=OPENAI_TOKEN, model=LLM_MODEL).bind_tools(
 )  # Клиент для работы с OpenAI API
 
 
+def get_current_time():
+    """
+    Повертає поточний час у форматі ISO 8601.
+    """
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
 async def make_completion(chat_history: ChatHistory, message: Message) -> str | None:
     """
     Обрабатывает сообщение пользователя, создаёт ответ с помощью модели и вызывает необходимые инструменты.
     Все промежуточные сообщения сохраняются во временном списке и обновляются в истории чата только в конце.
     """
     temp_messages = chat_history.data.copy()  # Копируем все сообщения из истории чата
+    temp_messages.append(
+        {"role": "system", "content": f"Current time and date: {get_current_time()}"}
+    )
     temp_messages.append(
         {"role": "user", "content": message.text.unwrap()}
     )  # Добавляем сообщение пользователя

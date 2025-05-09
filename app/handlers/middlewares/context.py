@@ -31,6 +31,7 @@ class MessageContextMiddleware(ABCMiddleware[Message]):
                 uid=event.from_user.id,
                 name=event.from_user.first_name,
                 chat_history=chat_history,
+                phone=None,
             )
         else:  # Если пользователь уже зарегистрирован
             chat_history = (
