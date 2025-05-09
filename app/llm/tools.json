@@ -2,66 +2,102 @@
     {
         "type": "function",
         "function": {
-            "name": "get_only_time",
-            "description": "Используй эту функцию, чтобы получить текущее время.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_full_time",
-            "description": "Используй эту функцию, чтобы получить текущее время, часовой пояс, дату, день.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_weather",
-            "description": "Используй эту функцию, чтобы узнать погоду в любом городе мира.",
+            "name": "get_free_time_slots",
+            "description": "Returns free time slots for employees based on their work schedule.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "city": {
-                        "type": "string",
-                        "description": "Название города, в котором ты хочешь узнать погоду."
-                    }
-                },
-                "required": ["city"],
-                "additionalProperties": false
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_random_image",
-            "description": "Используй эту функцию, отправить рандомное изображение пользователю. Не отвечай после выполнения этой функции.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "answer": {
-                        "type": "string",
-                        "description": "Твой ответ пользователю"
-                    },
-                    "size": {
+                    "min_slot_duration": {
                         "type": "integer",
-                        "description": "Размер изображения в пикселях. Минимум 150, максимум 600."
+                        "description": "Minimum duration of a free slot in minutes."
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "description": "Start date for searching free slots (format: 'YYYY-MM-DD')."
+                    },
+                    "end_date": {
+                        "type": "string",
+                        "description": "End date for searching free slots (format: 'YYYY-MM-DD')."
                     }
                 },
-                "required": ["answer"],
-                "additionalProperties": false
+                "required": [
+                    "min_slot_duration",
+                    "start_date",
+                    "end_date"
+                ]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_services",
+            "description": "Use this function to fetch a list of services and the staff members who perform them.",
+            "parameters": {"type": "object", "properties": {}, "required": []}
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "create_record",
+            "description": "Use this function to create a new record with multiple services or single service. You need to provide details like staff ID, services information, client details, datetime, and other optional parameters.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "staff_id": {
+                        "type": "integer",
+                        "description": "The staff_id of the staff member who will handle the services."
+                    },
+                    "services": {
+                        "type": "array",
+                        "description": "Array of services being provided.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "description": "The id of the services. Example: 10744535"
+                                },
+                                "cost": {
+                                    "type": "number",
+                                    "description": "The cost of the service. Example: 0"
+                                },
+                                "duration": {
+                                    "type": "integer",
+                                    "description": "The duration of the service in seconds"
+                                }
+                            },
+                            "required": ["id", "cost", "duration"]
+                        }
+                    },
+                    "client": {
+                        "type": "object",
+                        "description": "Details of the client for whom the record is being created.",
+                        "properties": {
+                            "phone": {
+                                "type": "string",
+                                "description": "The phone number of the client with country code.",
+                                "pattern": "^\\+[1-9]\\d{1,14}$",
+                                "examples": ["+12345678901"]
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the client."
+                            }
+                        },
+                        "required": ["phone", "name"]
+                    },
+                    "datetime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The date and time for the record (format: 'YYYY-MM-DDTHH:MM:SS+TZ')."
+                    },
+                    "comment": {
+                        "type": "string",
+                        "description": "A detailed description of what the client wants."
+                    }
+                },
+                "required": ["staff_id", "services", "client", "comment", "datetime"]
             }
         }
     }
